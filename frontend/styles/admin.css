@@ -1,6 +1,5 @@
 .view-users h1{
   font-family: cursive;
-  /* font-family: fantasy; */
   font-weight: 900;
   font-size: 35px;
 }
@@ -75,16 +74,12 @@
   box-shadow: 0 8px 30px rgba(8,18,36,0.06);
 }
 
-.list h2,
-.list input {
-  margin-left: 20px;
-}
-
 .list h2 {
   font-family: cursive;
   font-weight: bold;
   font-size: 35px;
   color: rgb(0, 0, 0);
+  margin-left: 20px;
 }
 
 .mini-search-bar {
@@ -97,6 +92,7 @@
   background: url('../images/icons/search-icon.png') no-repeat left 8px center white;
   background-size: 30px;
   outline-color:rgb(23, 28, 67);
+  margin-left: 20px;
 }
 
 .list .row-header {
@@ -140,5 +136,38 @@
   font-size: 16px; 
   color: rgb(23, 28, 67);
   margin: 6px 0px;
-  
+}
+
+.filter-option {
+  align-items: center;
+  margin-left: 20px;
+}
+
+.filter-option button,
+.filter-option select {
+  padding: 10px 20px;
+  box-shadow: inset 0px 1px 2px rgb(238, 238, 238, 0.05);
+  padding: 7px 5px;
+  width: 150px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.filter-option button:active,
+.filter-option select:hover {
+  background-color: rgb(211, 208, 208);
+  transition: background 0.2ms, transform 0.4ms;
+  outline: none;
+}
+
+.panel-header {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1.5fr 1fr 1.5fr 1fr;
+  gap: 20px;
+  align-items: center;
+  padding: 18px 16px;
+  border-bottom: 1px solid #edf0f6;
+  transition: background 0.2ms, transform 0.4ms;
 }

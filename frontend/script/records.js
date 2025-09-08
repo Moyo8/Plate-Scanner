@@ -22,7 +22,7 @@ const routes = {
       const res = await fetch("http://localhost:5000/api/plates");
       const plates = await res.json();
 
-      console.log("✅ Plates from backend:", plates); // <--- debug
+      console.log("Plates from backend:", plates); // debug
 
     let platesHTML = '';
 

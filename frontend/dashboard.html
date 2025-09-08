@@ -183,11 +183,43 @@
           </table>
       </section>
 
-      <section class="list" id="view-admin" hidden>Admin panel here</section>
+      <section class="list" id="view-admin" hidden>
+        <h2>Admin Panel</h2>
+        <div class="filter-option">
+          <input class="mini-search-bar" type="text" id="searchInput" placeholder="Search Plate / Owner">
+          
+          <select id="statusFilter">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Expired">Expired</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+
+          <select id="userFilter">
+            <option value="">All Users</option>
+            <option value="Admin1">Admin1</option>
+            <option value="Admin2">Admin2</option>
+          </select>
+
+          <button>Filter</button>
+          <button>Clear</button>
+        </div>
+
+        <div class="panel-header" role="row">
+          <div>
+            <input type="checkbox">
+          </div>
+          <div>Plate Number</div>
+          <div>Owner's Name</div>
+          <div>Status</div>
+          <div>Registered By</div>
+          <div>Action</div>
+        </div>
+      </section>
 
       <section class="list" id="view-flagged" hidden>Flagged reports here</section>
     </main>
 
-    <script type="module" src="script/dasboard.js"></script>
+    <script type="module" src="script/records.js"></script>
 </body>
 </html>

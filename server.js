@@ -43,3 +43,25 @@ app.post("/api/plates", async (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+
+app.put("/api/plates/:id", async (req, res) => {
+  try {
+    const updatedPlate = await Plate.findByIdAndUpdate(
+      req.params.id,      // plate ID from URL
+      req.body,           // new data
+      { new: true }       // return updated document
+    );
+    res.json(updatedPlate);
+  } catch (err) {
+    res.status(400).json({ error: "Error updating plate" });
+  }
+});
+
+app.delete("/api/plates/:id", async (req, res) => {
+  try {
+    await Plate.findByIdAndDelete(req.params.id);
+    res.json({ message: "Plate deleted" });
+  } catch (err) {
+    res.status(400).json({ error: "Error deleting plate" });
+  }
+});
