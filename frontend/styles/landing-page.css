@@ -1,0 +1,102 @@
+body {
+  background: linear-gradient(rgba(0, 0, 0, 0.5)), url(../images/landing-page.jpg) no-repeat center center/cover;
+  font-family: 'Times New Roman', Times, serif;
+  height: auto;
+  width: auto;
+  margin: 0 auto;
+  padding-top: 100px;
+  padding-left: 50px;
+  padding-right: 50px;
+  color: rgb(255, 255, 255);
+}
+
+.nav-header {
+  height: 70px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  
+  background-color: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgb(222, 222, 222);
+}
+.left-section {
+  align-items: center;
+  display: flex;
+  flex: 3;
+}
+
+.logo {
+  width: 90px;
+  margin-left: 15px;
+}
+
+.right-section {
+  align-items: center;
+  display: flex;
+  flex: 1;
+}
+
+/* .right-section div {
+  font-family: Roboto, Arial;
+  font-size: 10px;
+} */
+
+.right-section-link {
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  flex: 1;
+}
+
+.right-section-link:hover {
+  background-color: lightgrey;
+}
+
+.landing-content {
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  font-size: 45px;
+  margin: 0px;
+}
+
+h2 {
+  font-size: 45px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+
+
+.btn {
+  color: rgb(23, 28, 67);
+  font-weight: bold;
+  background-color: white;
+  font-family: inherit;
+  font-size: 22px;
+  width: fit-content;
+  padding: 14px 50px;
+  border: 1.5px solid rgb(23, 28, 67);
+  border-radius: 9px;
+  transition: 250ms;
+}
+
+.btn:hover {
+  background-color: rgb(23, 28, 67);
+  color: white;
+}
+
+.btn:active {
+  background-color: rgb(43, 50, 110);
+  border: 1.5px solid rgb(43, 50, 110);
+}

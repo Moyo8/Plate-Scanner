@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>login-signup</title>
+  <link rel="stylesheet" href="styles/login-signup.css" />
+
+</head>
+<body>
+   <img class="logo" src="images/platescanner-logo.png">
+  <section id="authentication" class="auth">
+    <div>
+      <h2 class="signup-msg">Login</h2>
+      <p class="info">Login to your account!</p>
+    </div>
+
+    <label class="signupDet" style="display: none;">Username</label>
+    <input class="signupDet" type="text" style="display: none;" required>
+    <label>Email</label>
+    <input id="inputEmail" type="email" required>
+    <label>Password</label>
+    <input id="inputPassword" type="password" required>
+    <p id="loginError" class="error"></p>
+    <label class="signupDet" style="display: none;">Confirm Password</label>
+    <input class="signupDet" type="password" style="display: none;" required>
+
+    <button type="submit" class="auth-btn">
+      Login
+    </button>
+    
+    <hr/>
+    <div class="signup-content">
+      <p>Don't have an account?</p>
+      <button class="reg-btn">Sign up</button>
+    </div>
+  </section>
+</body>
+<script type="module" src="script/login-signup.js"></script>
+</html>

@@ -1,0 +1,122 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 18px;
+  align-self: center;
+  min-height: max-content;
+  background: linear-gradient(rgba(67, 64, 81, 0.6)), url('../images/Signup-background.jpg') no-repeat center center/cover;
+}
+
+
+
+main,
+body,
+.auth {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: white;
+  font-family: 'Times New Roman', Times, serif,
+}
+
+.logo {
+  width: 90px;
+  display: block;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}
+
+.auth {
+  flex: 1;
+  justify-content: center;
+  max-width: 600px;
+  margin: 40px auto;
+  width: 100%;
+  background-color: rgba(22, 22, 22, 0.3);
+  padding: 12px 20px;
+  border-radius: 20px;
+  z-index: 2;
+}
+
+h2 {
+  font-size: 40px;
+  position: relative;
+  display: block;
+  justify-self: center;
+}
+
+.info {
+  margin-top: 7px;
+  position: relative;
+  display: block;
+  justify-self: center;
+}
+
+
+.signup-content {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+button {
+  color: #030615;
+  font-style: oblique;
+  font-weight: bold;
+  background-color: white;
+  width: fit-content;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 5px 28px;
+  border: 1.5px solid rgb(23, 28, 67);
+  border-radius: 9px;
+  box-shadow: 2px 2px 0 0  rgb(255, 255, 255);
+  cursor: pointer;
+  transition: 200ms;
+}
+
+button:hover {
+  background-color: rgb(23, 28, 67);
+  color: white;
+  box-shadow: 2px 2px 0 0  rgb(255, 255, 255);
+}
+
+button:active {
+  box-shadow: 0 0 0 0 black;
+  transform: translate(2px, 2px);
+}
+
+input {
+  font-size: 16px;
+  background-color: white;
+  border: 1px solid;
+  color: white;
+  border-bottom: 2px solid white;
+  border-right: 2px solid white;
+  background: transparent;
+  padding: 12px 14px;
+  border-radius: 5px;
+  width: 100%;
+  outline: none;
+  appearance: none;
+}
+
+
+label {
+  font-size: 20px;
+  font-style: inherit;
+  font-weight: bold;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+}

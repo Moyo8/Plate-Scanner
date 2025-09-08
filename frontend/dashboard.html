@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="styles/admin.css">
+  <link rel="stylesheet" href="styles/header.css">
+  <link rel="stylesheet" href="styles/general.css">
+  <link rel="stylesheet" href="styles/side-nav.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@100..700&family=Audiowide&family=Fira+Code:wght@300..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Major+Mono+Display&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Orbitron:wght@400..900&family=Playfair:ital,opsz,wght@0,5..1200,300..900;1,5..1200,300..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  
+</head>
+<body>
+   <header class="topbar">
+      <div class="left-section">
+        <img src="images/icons/plate-scanner-logo.png">
+      </div>
+      <div class="middle-section">
+        <input id="globalSearch" class="search-bar" type="text" placeholder="Search plates">
+      </div>
+      <div class="right-section">
+        <div class="notification-icon-container">
+          <img class="notification-icon" src="images/icons/notification-icon.png">
+          <div class="notification-count">3</div>
+        </div>
+        <img class="current-user-picture" src="images/icons/avatar-icon.png">
+        <div class="user-info">
+          <p class="user-name">Xultan_007</p>
+          <p class="user-email">sultanafolabi@dev.ng</p>
+        </div> 
+      </div>
+    </header>
+
+    <nav class="sidenav">
+      <div class="top-section">
+        <p>Menu</p>
+
+        <a href="#/user">
+          <div class="sidenav-link">
+            <img src="images/icons/dashboard-icon.png">
+            <div>Dashboard</div>
+          </div>
+        </a>
+
+        <a href="#/plates">
+          <div class="sidenav-link">
+            <img src="images/icons/records-icon.png">
+            <div>Plate Records</div>
+          </div>
+        </a>
+        <a href="#/logs">
+          <div class="sidenav-link">
+            <img src="images/icons/security-log-icon.png">
+            <div>Security Logs</div>
+          </div>
+        </a>
+
+        <a href="#/admin">
+          <div class="sidenav-link">
+            <img src="images/icons/admin-icon.png">
+            <div>Admin Panel</div>
+          </div>
+        </a>
+
+        <a href="#/flagged">
+          <div class="sidenav-link">
+            <img src="images/icons/flagged-icon.png">
+            <div>Flagged Report</div>
+          </div>
+        </a>
+      </div>
+      
+      <div class="bottom-section">
+        <p>General</p>
+        <div class="sidenav-link">
+          <img src="images/icons/setting-icon.png">
+          <div>Setting</div>
+        </div>
+        <div class="sidenav-link">
+          <img src="images/icons/help-icon.png">
+          <div>Help</div>
+        </div>
+        <div class="sidenav-link">
+          <img src="images/icons/logout-icon.png">
+          <div>Logout</div>
+        </div>
+      </div>
+    </nav>
+
+    <main id="content">
+      <section class="list" id="view-users">
+        <h2>Good Morning Dev!</h1>
+        <div class="dev-content">
+          <img src="images/profile-pic/profile-1.jpg">
+          <div class="dev-info">
+            <p>User-name: Xultan_007</p>
+            <p>Role: Admin</p>
+            <p>Status: Active</p>
+            <p>Email: sultanafolabi@dev.ng</p>
+          </div>
+        </div>
+        <hr/>
+
+        <div class="quick-content-grid">
+          <div class="quick-content">
+            <div class="panel-icon">
+              <img src="images/icons/user-panel.png">
+              <p class="panel-info">Total Number of Active Users</p>
+            </div>
+            <div>
+              <p class="panel-title">Users</p>
+              <p class="panel-count">30</p>
+            </div>
+          </div>
+          <div class="quick-content">
+            <div class="panel-icon">
+              <img src="images/icons/plate-record-panel.png">
+              <p class="panel-info">Registered Plates</p>
+            </div>
+            <div>
+              <p class="panel-title">Records</p>
+              <p id="recordCount" class="panel-count"></p>
+            </div>
+          </div>
+          <div class="quick-content">
+            <div class="panel-icon">
+              <img src="images/icons/admin-panel.png">
+              <p class="panel-info">Number of Admins</p>
+            </div>
+            <div>
+              <p class="panel-title">Dev</p>
+              <p class="panel-count">7</p>
+            </div>
+          </div>
+          <div class="quick-content">
+            <div class="panel-icon">
+              <img src="images/icons/flagged-panel.png">
+              <p class="panel-info">Number of Flagged Plates</p>
+            </div>
+            <div>
+              <p class="panel-title">Flagged</p>
+              <p class="panel-count">2</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="list" id="view-plates" aria-label="Plates list">
+        <h2>Plate Records</h2>
+        <input class="mini-search-bar" id="plateSearch" type="text" placeholder="Search plates">
+        <div class="row-header" role="row">
+          <div>Plate Number</div>
+          <div>Owner info</div>
+          <div>Car Info</div>
+          <div>Status</div>
+          <div>Registered By</div>
+        </div>
+
+        <div class="plate-grid" id="plateRow">
+          <!-- row -->
+        </div> 
+      </section>
+
+      <section class="list" id="view-logs" hidden>
+        <h2>Security Logs</h2>
+          <input class="mini-search-bar" type="text" id="plateSearch" placeholder="Search Logs">
+          <table border="1" width="100%">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Status (Success/Fail)</th>
+                <th>Date & Time</th>
+                <th>Record Accessed</th>
+              </tr>
+            </thead>
+            <tbody id="plateTable">
+            <!-- logs-table -->
+            </tbody>
+          </table>
+      </section>
+
+      <section class="list" id="view-admin" hidden>Admin panel here</section>
+
+      <section class="list" id="view-flagged" hidden>Flagged reports here</section>
+    </main>
+
+    <script type="module" src="script/dasboard.js"></script>
+</body>
+</html>

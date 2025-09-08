@@ -1,0 +1,114 @@
+.topbar {
+  height: 70px;
+  width: 100%;
+
+  display: flex;
+  justify-content: space-between;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  background-color: rgb(248, 248, 248);
+  border-bottom: 1px solid rgb(222, 222, 222);
+}
+
+.left-section {
+  flex: 1;
+  align-items: center;
+  display: flex;
+}
+
+.left-section img {
+  height: 5rem;
+}
+
+.middle-section {
+  flex: 1.5;
+  margin-left: 60px;
+  margin-right: 40px;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 1;
+}
+
+.search-bar {
+  box-shadow: inset 0px 1px 2px rgb(238, 238, 238, 0.05);
+  padding: 10px 10px 10px 50px;
+  width: 50%;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  font-size: 16px;
+  background: url('../images/icons/search-icon.png') no-repeat left 12px center white;
+  background-size: 30px;
+  outline-color: cornflowerblue;
+}
+
+.search-bar::placeholder {
+  font-size: 16px;
+}
+
+
+.right-section {
+  flex: 2;
+  margin-right: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: 30px;
+  flex-shrink: 1;
+}
+
+.notification-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+ 
+.notification-icon {
+  height: 30px;
+  cursor: pointer;
+}
+
+.notification-count {
+  position: absolute;
+  top: -2px;
+  right: 1px;
+  font-size: 11px;
+  background-color: rgb(232, 0, 0);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.current-user-picture {
+  height: 35px;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: sans-serif;
+}
+
+.user-name {
+  margin: 0;
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.user-email {
+  font-size: 12px;
+  margin: 0;
+  color: gray;
+}
