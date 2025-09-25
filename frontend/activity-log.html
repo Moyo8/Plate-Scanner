@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Activity logs</title>
+  <link rel="stylesheet" href="styles/general.css">
+  <link rel="stylesheet" href="styles/header.css">
+  <style>
+    :root{ --bg:#f7fafc; --card:#ffffff; --muted:#64748b; --brand-1:#1e90ff; --brand-2:#0f6fd1; --ok:#065f46; --bad:#991b1b }
+    body{ font-family: 'Poppins', sans-serif; margin:28px; background:var(--bg); color:#07142a }
+    .wrap{ max-width:1100px; margin:0 auto }
+    .header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px }
+    .title{ font-size:20px; font-weight:700 }
+    .back{ color:#0f172a; text-decoration:none; font-weight:600; margin-right:12px }
+    .card{ background:var(--card); padding:18px; border-radius:12px; box-shadow:0 18px 50px rgba(2,6,23,.06) }
+    .controls{ display:flex; gap:8px }
+    .btn{ background:linear-gradient(180deg,var(--brand-1),var(--brand-2)); color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:700 }
+    #logTable{ width:100%; border-collapse:collapse; font-size:13px }
+    #logTable thead th{ text-align:left; padding:10px 8px; color:var(--muted); font-weight:600; border-bottom:1px solid rgba(0,0,0,0.06) }
+    #logTable tbody td{ padding:10px 8px; border-bottom:1px dashed rgba(0,0,0,0.03) }
+    .badge{ padding:6px 8px; border-radius:999px; font-weight:700; color:#fff; font-size:12px }
+    .badge.real{ background:var(--ok) }
+    .badge.fake{ background:var(--bad) }
+    .muted{ color:var(--muted) }
+  </style>
+</head>
+<body>
+  <div class="top"><a class="back" href="index.html">← Back</a><h2>Activity logs</h2></div>
+    <div class="wrap">
+      <div class="header">
+        <div style="display:flex; align-items:center"><a class="back" href="index.html">← Back</a><div class="title">Activity logs</div></div>
+        <div class="controls"><button id="exportBtn" class="btn">Export CSV</button><button id="clearBtn" class="btn">Clear</button></div>
+      </div>
+
+      <div class="card">
+        <div class="muted" style="margin-bottom:12px">Recent plate lookups (client-side)</div>
+        <table id="logTable" aria-live="polite">
+          <thead><tr><th>Plate</th><th>Result</th><th>Time</th></tr></thead>
+          <tbody id="logBody"><tr><td colspan="3" class="muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  <script>
+    const LOG_KEY = 'plate_scanner_activity_log_v1';
+    const logBody = document.getElementById('logBody');
+    const clearBtn = document.getElementById('clearBtn');
+    const exportBtn = document.getElementById('exportBtn');
+
+    function loadLog(){ try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch(e){ return []; } }
+
+    function render(){
+      const items = loadLog();
+      if(!items.length){ logBody.innerHTML = '<tr><td colspan="3" class="muted">No activity recorded yet.</td></tr>'; return }
+      logBody.innerHTML = items.map(it => {
+        const t = new Date(it.time).toLocaleString();
+        const badge = `<span class="badge ${it.result === 'real' ? 'real' : 'fake'}">${it.result}</span>`;
+        return `<tr><td style="font-weight:700">${it.plate}</td><td>${badge}</td><td class="muted">${t}</td></tr>`;
+      }).join('');
+    }
+
+    clearBtn.addEventListener('click', ()=>{ localStorage.removeItem(LOG_KEY); render(); });
+
+    exportBtn.addEventListener('click', ()=>{
+      const items = loadLog();
+      if(!items.length) return alert('No activity to export');
+      const rows = [['plate','result','time'], ...items.map(i=>[i.plate,i.result,i.time])];
+      const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'activity-log.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    render();
+  </script>
+</body>
+</html>

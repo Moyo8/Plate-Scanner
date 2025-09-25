@@ -1,27 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>in-page</title>
-  <link rel="stylesheet" href="../styles/verification-page.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <link rel="stylesheet" href="verification-page.css">
 </head>
 <body>
-  <img>
-  <div>
-    <div class="verification-box">
-      <h2>Verify your Email</h2>
-      <p>We sent a six digit code to your email. Enter the code below:</p>
-      <div class="logger-email">sultanafolabi07@gmail.com</div>
-      <form class="input-code">
-        <input type="tel" maxlength="1" >
-        <input type="tel" maxlength="1" >
-        <input type="tel" maxlength="1" >
-        <input type="tel" maxlength="1" >
-        <input type="tel" maxlength="1" >
-        <input type="tel" maxlength="1" >
-      </form>
-      <button class="verify-btn">Verify</button>
-      <p>Didn't receive an email? Try checking your junk folder. <span class="resend-link">Resend code &#62;</span></p>
+    <div class="container">
+        <div class="step-indicator">
+            <div class="step completed"></div>
+            <div class="step active"></div>
+            <div class="step"></div>
+        </div>
+
+        <div id="verification-form">
+            <div class="icon"></div>
+            
+            <h1>Verify your email</h1>
+            <p>We've sent a 6-digit verification code to your email address. Enter the code below to verify your account.</p>
+            
+            <div class="email-display" id="email-display">
+                john.doe@example.com
+            </div>
+            
+            <div class="code-inputs">
+                <input type="text" class="code-input" maxlength="1" id="code-0">
+                <input type="text" class="code-input" maxlength="1" id="code-1">
+                <input type="text" class="code-input" maxlength="1" id="code-2">
+                <input type="text" class="code-input" maxlength="1" id="code-3">
+                <input type="text" class="code-input" maxlength="1" id="code-4">
+                <input type="text" class="code-input" maxlength="1" id="code-5">
+            </div>
+            
+            <button class="verify-btn" id="verify-btn" disabled>
+                Verify Code
+                <div class="spinner"></div>
+            </button>
+            
+            <div class="resend-section">
+                Didn't receive the code? 
+                <button class="resend-btn" id="resend-btn">Resend code</button>
+            </div>
+        </div>
+
+        <div class="success-animation" id="success-animation">
+            <div class="success-checkmark"></div>
+            <h1>Email Verified!</h1>
+            <p>Your email has been successfully verified. You'll be redirected to your dashboard shortly.</p>
+            <div class="redirect-message">
+                Redirecting in <span id="countdown">3</span> seconds...
+            </div>
+        </div>
     </div>
-  </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

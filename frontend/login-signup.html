@@ -3,38 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>login-signup</title>
+  <title>Login/Signup</title>
   <link rel="stylesheet" href="styles/login-signup.css" />
-
 </head>
 <body>
-   <img class="logo" src="images/platescanner-logo.png">
+  <img class="logo" src="images/platescanner-logo.png" alt="PlateScanner Logo">
   <section id="authentication" class="auth">
-    <div>
-      <h2 class="signup-msg">Login</h2>
-      <p class="info">Login to your account!</p>
-    </div>
+    <form id="authForm">
+      <div>
+        <h2 class="signup-msg">Login</h2>
+        <p class="info">Login to your account!</p>
+      </div>
 
-    <label class="signupDet" style="display: none;">Username</label>
-    <input class="signupDet" type="text" style="display: none;" required>
-    <label>Email</label>
-    <input id="inputEmail" type="email" required>
-    <label>Password</label>
-    <input id="inputPassword" type="password" required>
-    <p id="loginError" class="error"></p>
-    <label class="signupDet" style="display: none;">Confirm Password</label>
-    <input class="signupDet" type="password" style="display: none;" required>
+  <label for="inputUsername" class="signupDet" style="display: none;">Username</label>
+  <input id="inputUsername" class="signupDet" type="text" style="display: none;" disabled>
+      <label for="inputEmail">Email</label>
+      <input id="inputEmail" type="email" required>
+      <label for="inputPassword">Password</label>
+      <input id="inputPassword" type="password" required>
+  <div style="margin-top:6px;margin-bottom:6px;"><a href="forgot-password.html">Forgot password?</a></div>
+      <p id="loginError" class="error"></p>
+  <label for="confirmPassword" class="signupDet" style="display: none;">Confirm Password</label>
+  <input id="confirmPassword" class="signupDet" type="password" style="display: none;" disabled>
 
-    <button type="submit" class="auth-btn">
-      Login
-    </button>
-    
-    <hr/>
-    <div class="signup-content">
-      <p>Don't have an account?</p>
-      <button class="reg-btn">Sign up</button>
-    </div>
+      <button type="submit" class="auth-btn">Login</button>
+      
+      <hr/>
+      
+      <div class="signup-content">
+        <p>Don't have an account?</p>
+        <button type="button" class="reg-btn">Sign up</button>
+      </div>
+    </form>
   </section>
+  <script type="module" src="script/login-signup.js"></script>
 </body>
-<script type="module" src="script/login-signup.js"></script>
 </html>

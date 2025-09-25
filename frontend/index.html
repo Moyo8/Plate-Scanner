@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlateScanner</title>
+  <!-- Reuse dashboard styles for consistent look -->
+  <link rel="stylesheet" href="styles/general.css">
+  <link rel="stylesheet" href="styles/header.css">
+  <link rel="stylesheet" href="styles/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+  /* Improved landing styling */
+    :root{ --card-bg: rgba(255,255,255,0.92); --muted:#64748b; --brand-1:#1e90ff; --brand-2:#0f6fd1 }
+  html,body{ height:100%; }
+  body{ font-family: 'Poppins', sans-serif; margin:0; color:#0f172a; background: url('images/Signup-background.jpg') center/cover no-repeat fixed; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+
+    /* dark overlay for better contrast */
+    body::before{ content:''; position:fixed; inset:0; background:linear-gradient(rgba(3,7,18,0.45), rgba(3,7,18,0.45)); z-index:0 }
+
+  .hero-card{ position:relative; z-index:1; width:min(980px,92%); background:var(--card-bg); border-radius:14px; padding:28px; box-shadow:0 24px 60px rgba(2,6,23,.45); border:1px solid rgba(15,23,42,0.06); max-height:calc(100vh - 56px); overflow:auto }
+    .hero-header{ margin-bottom:12px }
+  .hero-title{ font-size:30px; margin:0 0 8px; color:#07142a }
+  .hero-sub{ color:var(--muted); margin:0 0 14px; font-size:14px }
+
+    /* Search / lookup row */
+    .lookup-row{ display:flex; gap:12px; align-items:center }
+  .lookup-row .search-input{ flex:1; height:66px; padding:14px 18px; border-radius:12px; border:1px solid rgba(2,6,23,0.06); font-weight:700; letter-spacing:1px; text-transform:uppercase; background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,250,0.95)); box-shadow: inset 0 -1px 0 rgba(0,0,0,0.02); font-size:15px }
+
+    .lookup-row .check-btn{ height:66px; padding:0 22px; background:linear-gradient(180deg,var(--brand-1),var(--brand-2)); color:#fff; border:none; border-radius:12px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 14px 40px rgba(15,111,209,.22); cursor:pointer; transition:transform .12s ease, box-shadow .12s ease }
+    .lookup-row .check-btn:hover{ transform:translateY(-2px); box-shadow:0 20px 50px rgba(15,111,209,.28) }
+    .lookup-row .check-btn:active{ transform:translateY(0) }
+
+    #result{ transition:opacity .12s ease }
+
+  @media (max-width:880px){ .hero-card{ padding:18px } .hero-title{ font-size:20px } .hero-sub{ font-size:13px } .lookup-row{ flex-direction:column; align-items:stretch } .lookup-row .check-btn{ width:100% } }
+      /* Activity link in top-right */
+      .activity-link{ position:fixed; top:18px; right:20px; z-index:2; color:#fff; text-decoration:underline; font-weight:600; background:transparent; padding:6px 8px; border-radius:6px }
+      .activity-link:focus{ outline:2px solid rgba(255,255,255,0.18); outline-offset:2px }
+  </style>
+</head>
+<body>
+    <!-- single static background (Signup-background.jpg) -->
+    <a id="activityLink" href="activity-log.html" class="activity-link" aria-label="Activity logs">Activity logs</a>
+  <div class="hero-card">
+    <div class="hero-header">
+      <h1 class="hero-title">Verify Vehicle Plate Numbers Instantly</h1>
+      <p class="hero-sub">Only letters, numbers, and dash ( - ) are allowed. Example: <strong>AW795-AAA</strong></p>
+    </div>
+
+    <form id="lookupForm" class="lookup-row" novalidate>
+      <label class="sr-only" for="plate">Plate Number</label>
+      <input id="plate" name="plate" class="search-input" type="text" placeholder="Enter plate number" inputmode="latin" autocomplete="off" maxlength="12" pattern="^[A-Za-z0-9-]+$" required />
+      <button type="submit" id="checkBtn" class="check-btn">Check</button>
+    </form>
+
+    <div id="result" style="margin-top:18px; display:none; padding:12px; border-radius:8px"></div>
+  </div>
+
+  <script type="module">
+    import { plates } from './data/plates.js';
+
+    // Elements
+    const input = document.getElementById('plate');
+    const form = document.getElementById('lookupForm');
+    const result = document.getElementById('result');
+
+    // Build a quick lookup map for O(1) searches
+    const plateMap = new Map(plates.map(p => [p.plateNumber.toUpperCase(), p]));
+
+    const sanitize = (v) => v.toUpperCase().replace(/[^A-Z0-9-]+/g, '');
+
+    input.addEventListener('input', () => {
+      const caret = input.selectionStart;
+      const before = input.value;
+      const after = sanitize(before);
+      if (before !== after) {
+        input.value = after;
+        const delta = before.length - after.length;
+        const pos = Math.max(0, caret - delta);
+        input.setSelectionRange(pos, pos);
+      }
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const value = sanitize(input.value);
+      input.value = value;
+
+      // basic local validation
+      const formatOk = /^[A-Z0-9-]+$/.test(value) && value.length >= 3;
+      if (!formatOk) {
+        showMessage('Please enter a valid plate number (letters, numbers, dash).', 'error');
+        input.focus();
+        return;
+      }
+
+  const found = plateMap.get(value);
+  if (found) showPlate(found);
+  else showMessage(`The plate ${value} is fake.`, 'fake');
+    });
+
+    function showPlate(p) {
+      const status = (p.status || 'Unknown').toLowerCase();
+      let bg = '#ecfdf5';
+      let color = '#065f46';
+      if (status === 'expired') { bg = '#fff7ed'; color = '#92400e' }
+      if (status === 'flagged') { bg = '#fff1f2'; color = '#991b1b' }
+
+      result.style.display = 'block';
+      result.style.background = bg;
+      result.style.color = color;
+      result.innerHTML = `
+        <strong style="display:block; margin-bottom:6px">Plate: ${p.plateNumber} — <span style="font-weight:800;">${p.status}</span></strong>
+        <div style="font-size:14px; color:rgba(0,0,0,0.75)">
+          <div><strong>Owner:</strong> ${p.ownerInfo?.name || '—'}</div>
+          <div><strong>Phone:</strong> ${p.ownerInfo?.phoneNo || '—'}</div>
+          <div><strong>Model:</strong> ${p.carInfo?.model || '—'}</div>
+          <div><strong>Color:</strong> ${p.carInfo?.color || '—'}</div>
+          <div><strong>Category:</strong> ${p.carInfo?.category || '—'}</div>
+          <div><strong>Expires:</strong> ${p.carInfo?.expires || '—'}</div>
+          <div style="margin-top:8px; font-size:13px; color:var(--muted)"><em>Registered by: ${p.registeredBy || '—'}</em></div>
+        </div>
+      `;
+    }
+
+    function showMessage(msg, kind='info'){
+      result.style.display = 'block';
+      if (kind === 'error') { result.style.background = '#fef2f2'; result.style.color = '#991b1b' }
+      else if (kind === 'fake') { result.style.background = '#fff1f2'; result.style.color = '#991b1b' }
+      else { result.style.background = '#ecfdf5'; result.style.color = '#065f46' }
+      result.textContent = msg;
+    }
+  </script>
+  <!-- no slideshow: static Signup background applied via CSS -->
+</body>
+</html>
