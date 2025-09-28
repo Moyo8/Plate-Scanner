@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-// Allow specific development origins (add any other host/port you use)
+
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:5500',
@@ -121,6 +121,10 @@ app.delete("/api/plates/:id", async (req, res) => {
 // mount auth routes
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
+
+// mount logs route (protected)
+const logsRoutes = require('./routes/logs');
+app.use('/api/logs', logsRoutes);
 
 // root -> serve landing page
 app.get('/', (req, res) => {

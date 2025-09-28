@@ -271,5 +271,63 @@
     </main>
 
     <script type="module" src="script/records.js"></script>
+    <script>
+      // fetch and render security logs
+      const API_BASE = (window.API_BASE || (location.hostname === '127.0.0.1' && location.port === '5500') ? 'http://127.0.0.1:5000' : 'http://localhost:5000');
+
+      async function loadLogs(q) {
+        try {
+          const params = new URLSearchParams({ limit: '200' });
+          if (q) params.set('q', q);
+          const url = API_BASE.replace(/\/$/, '') + '/api/logs?' + params.toString();
+          const res = await fetch(url, { credentials: 'include' });
+          if (!res.ok) {
+            if (res.status === 401) throw new Error('Unauthorized - please log in');
+            throw new Error('Failed to fetch logs');
+          }
+          const data = await res.json();
+          const tbody = document.getElementById('plateTable');
+          tbody.innerHTML = '';
+          (data.logs || []).forEach(log => {
+            const tr = document.createElement('tr');
+            const userTd = document.createElement('td');
+            userTd.textContent = log.username || log.email || (log.userId || 'Unknown');
+            const statusTd = document.createElement('td');
+            statusTd.textContent = (log.status || '').toUpperCase();
+            const dateTd = document.createElement('td');
+            const d = new Date(log.createdAt || log.createdAt);
+            dateTd.textContent = isNaN(d) ? '' : d.toLocaleString();
+            const recTd = document.createElement('td');
+            recTd.textContent = log.recordAccessed || '';
+            tr.appendChild(userTd);
+            tr.appendChild(statusTd);
+            tr.appendChild(dateTd);
+            tr.appendChild(recTd);
+            tbody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error('Load logs error:', err && (err.stack || err));
+        }
+      }
+
+      // initial load when logs section is visible
+      document.addEventListener('DOMContentLoaded', () => {
+        // show logs view if hash indicates logs
+        if (location.hash.includes('/logs')) {
+          document.getElementById('view-logs').hidden = false;
+          loadLogs();
+        }
+
+        // simple hash change support
+        window.addEventListener('hashchange', () => {
+          if (location.hash.includes('/logs')) {
+            document.getElementById('view-logs').hidden = false;
+            loadLogs();
+          } else {
+            document.getElementById('view-logs').hidden = true;
+          }
+        });
+      });
+    </script>
 </body>
 </html>

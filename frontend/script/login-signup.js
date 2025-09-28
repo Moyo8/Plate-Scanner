@@ -1,4 +1,5 @@
 let isRegistration = false;
+const API_BASE = window.API_BASE || (`http://${location.hostname}:5000`);
 
 const regBtn = document.querySelector('.reg-btn');
 const signupInputs = document.querySelectorAll('input.signupDet');
@@ -45,8 +46,8 @@ authentication.addEventListener('submit', (e) => {
     error.textContent = 'Passwords do not match.';
   } else {
     error.textContent = '';
-    // send request to backend
-  const url = isRegistration ? 'http://localhost:5000/api/auth/signup' : 'http://localhost:5000/api/auth/login';
+    // send request to backend (use API_BASE so host/port match and cookies work)
+  const url = isRegistration ? `${API_BASE}/api/auth/signup` : `${API_BASE}/api/auth/login`;
     const body = isRegistration ? { name: username, email, password } : { email, password };
     fetch(url, {
       method: 'POST',
@@ -72,8 +73,6 @@ authentication.addEventListener('submit', (e) => {
         localStorage.setItem('token', data.token);
       }
 
-      // Prefer server-provided redirect; otherwise decide by email domain.
-      // Use relative paths (no leading slash) so the browser uses the current origin.
       let destination = data.redirect;
       if (!destination) {
         const toDashboard = /@dev\.ng$/i.test(email);

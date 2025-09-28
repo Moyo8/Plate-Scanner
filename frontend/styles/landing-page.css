@@ -43,11 +43,6 @@ body {
   flex: 1;
 }
 
-/* .right-section div {
-  font-family: Roboto, Arial;
-  font-size: 10px;
-} */
-
 .right-section-link {
   height: 60px;
   display: flex;

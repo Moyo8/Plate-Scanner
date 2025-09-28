@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const SecurityLog = require('../models/SecurityLog');
 const { sendMail } = require('../mailTrap/mailTrapConfig');
 const { JWT_SECRET } = require('../middleware/auth');
 require('dotenv').config();
@@ -79,8 +80,18 @@ router.post('/login', async (req, res) => {
     user.refreshTokens.push({ token: refreshToken, expires: new Date(Date.now() + 7*24*3600*1000) });
     await user.save();
 
-    // set HttpOnly cookie for refresh token
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false, sameSite: 'Lax', maxAge: 7*24*3600*1000 });
+  // set HttpOnly cookies for refresh token and short-lived access token (so frontend fetch with credentials works)
+  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false, sameSite: 'Lax', maxAge: 7*24*3600*1000 });
+  res.cookie('accessToken', accessToken, { httpOnly: true, secure: false, sameSite: 'Lax', maxAge: 15*60*1000 });
+
+    // create security log for successful login
+    try {
+      const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
+      const ua = req.get('User-Agent') || req.headers['user-agent'];
+      await SecurityLog.create({ userId: user._id, username: user.name || user.email, email: user.email, status: 'success', ip, userAgent: ua, recordAccessed: 'login' });
+    } catch (logErr) {
+      console.error('Failed to write security log:', logErr && (logErr.stack || logErr));
+    }
 
     res.json({ token: accessToken, user: { id: user._id, email: user.email, name: user.name, isVerified: user.isVerified } });
   } catch (err) {
