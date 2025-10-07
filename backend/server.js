@@ -24,9 +24,9 @@ app.use(cors({
   credentials: true,
 }));
 
-// Serve frontend static files
+// Serve frontend static files but don't auto-serve index.html so we control the root
 const frontendPath = path.join(__dirname, '..', 'frontend');
-app.use(express.static(frontendPath));
+app.use(express.static(frontendPath, { index: false }));
 
 
 // Connect to MongoDB with basic error handling
@@ -133,10 +133,8 @@ app.get('/', (req, res) => {
 
 const PORT = 5000;
 
-app.get('/index.html', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
-});
-
+// Ensure explicit routes; redirect index to landing page to avoid it popping up
+app.get('/index.html', (req, res) => res.redirect('/'));
 app.get('/dashboard.html', (req, res) => {
   res.sendFile(path.join(frontendPath, 'dashboard.html'));
 });
