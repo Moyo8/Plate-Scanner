@@ -30,7 +30,7 @@ app.use(express.static(frontendPath, { index: false }));
 
 
 // Connect to MongoDB with basic error handling
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/platedb', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://Moyosore8:J9D5LQIObymkFXjl@cluster0.whus1ex.mongodb.net/platedb', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
