@@ -5,7 +5,7 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npm install
+    buildCommand: cd backend && npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -15,9 +15,7 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: MONGODB_URI
-        fromDatabase:
-          name: plate-scanner-db
-          property: connectionString
+        sync: false  
       - key: MAILTRAP_TOKEN
         sync: false
     healthCheckPath: /api/health
@@ -34,10 +32,3 @@ services:
       - type: rewrite
         source: /*
         destination: /landing-page.html
-
-# MongoDB Database
-databases:
-  - name: plate-scanner-db
-    plan: free
-    databaseName: platescanner
-    user: platescanner_user
