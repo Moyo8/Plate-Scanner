@@ -1,0 +1,43 @@
+services:
+  # Backend API Service
+  - type: web
+    name: plate-scanner-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        fromDatabase:
+          name: plate-scanner-db
+          property: connectionString
+      - key: MAILTRAP_TOKEN
+        sync: false
+    healthCheckPath: /api/health
+
+  # Frontend Static Site
+  - type: web
+    name: plate-scanner-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: echo "No build needed"
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /landing-page.html
+
+# MongoDB Database
+databases:
+  - name: plate-scanner-db
+    plan: free
+    databaseName: platescanner
+    user: platescanner_user

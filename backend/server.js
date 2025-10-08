@@ -30,14 +30,21 @@ app.use(express.static(frontendPath, { index: false }));
 
 
 // Connect to MongoDB with basic error handling
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://Moyosore8:J9D5LQIObymkFXjl@cluster0.whus1ex.mongodb.net/platedb', {
+const mongooseOpts = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-}).then(() => {
-  console.log('MongoDB connected');
-}).catch(err => {
-  console.error('MongoDB connection error:', err && err.message ? err.message : err);
-});
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  maxPoolSize: 20,
+};
+
+const mongoUri = process.env.MONGODB_URI || '';
+mongoose.connect(mongoUri, mongooseOpts)
+  .then(() => {
+    console.log('MongoDB connected');
+  }).catch(err => {
+    console.error('MongoDB connection error:', err && err.message ? err.message : err);
+  });
 
 // Global error handlers to surface unexpected crashes in the terminal
 process.on('uncaughtException', (err) => {
@@ -137,5 +144,23 @@ const PORT = 5000;
 app.get('/index.html', (req, res) => res.redirect('/'));
 app.get('/dashboard.html', (req, res) => {
   res.sendFile(path.join(frontendPath, 'dashboard.html'));
+});
+// Health check for DB
+app.get('/health/db', async (req, res) => {
+  try {
+    const state = mongoose.connection.readyState; // 0 disconnected, 1 connected, 2 connecting, 3 disconnecting
+    const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+    // optional quick ping
+    let pingOk = false;
+    try {
+      await mongoose.connection.db.admin().ping();
+      pingOk = true;
+    } catch (err) {
+      pingOk = false;
+    }
+    res.json({ state: states[state] || state, ping: pingOk });
+  } catch (err) {
+    res.status(500).json({ state: 'error', error: err.message });
+  }
 });
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
