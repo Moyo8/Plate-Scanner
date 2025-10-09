@@ -28,7 +28,7 @@ regBtn.addEventListener('click', () => {
   });
 });
 
-authentication.addEventListener('submit', (e) => {
+authentication.addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = isRegistration ? document.getElementById('inputUsername').value.trim() : '';
   const email = document.getElementById('inputEmail').value.trim();
@@ -36,71 +36,104 @@ authentication.addEventListener('submit', (e) => {
   const confirm = isRegistration ? document.getElementById('confirmPassword').value.trim() : '';
   const error = document.getElementById('loginError');
 
+  // Validation
   if (isRegistration && !username) {
     error.textContent = 'Username is required.';
+    return;
   } else if (!validateEmail(email)) {
     error.textContent = 'Invalid email format.';
+    return;
   } else if (password.length < 6) {
     error.textContent = 'Password must be at least 6 characters.';
+    return;
   } else if (isRegistration && password !== confirm) {
     error.textContent = 'Passwords do not match.';
-  } else {
-    error.textContent = '';
-    // send request to backend (use API_BASE so host/port match and cookies work)
+    return;
+  }
+
+  error.textContent = '';
+  
   const url = isRegistration ? `${API_BASE}/api/auth/signup` : `${API_BASE}/api/auth/login`;
-    const body = isRegistration ? { name: username, email, password } : { email, password };
-    fetch(url, {
+  const body = isRegistration ? { name: username, email, password } : { email, password };
+
+  try {
+    const res = await fetch(url, {
       method: 'POST',
-      credentials: 'include',
+      credentials: 'include', // CRITICAL for cookies
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
-    }).then(async res => {
-      let data;
-      try {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) data = await res.json();
-        else data = { error: await res.text() };
-      } catch (e) {
-        data = { error: 'Failed to parse response' };
-      }
+    });
 
-      if (!res.ok) {
-        console.error('Auth error', res.status, data);
-        error.textContent = data.error || `HTTP ${res.status}`;
+    let data;
+    try {
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        data = await res.json();
+      } else {
+        data = { error: await res.text() };
+      }
+    } catch (e) {
+      data = { error: 'Failed to parse response' };
+    }
+
+    if (!res.ok) {
+      console.error('Auth error', res.status, data);
+      error.textContent = data.error || `HTTP ${res.status}`;
+      return;
+    }
+
+    // Handle signup
+    if (isRegistration) {
+      if (data.exists) {
+        error.textContent = 'An account with that email already exists.';
+        return;
+      } else if (data.emailError) {
+        error.textContent = 'Account created but verification email failed to send. Contact support.';
+        return;
+      } else {
+        // Successful signup
+        error.style.color = 'green';
+        error.textContent = 'Account created successfully! Switching to login...';
+        authentication.reset();
+        // Switch to login mode after a brief delay
+        setTimeout(() => {
+          regBtn.click();
+          error.textContent = 'Please login with your new account.';
+        }, 1500);
         return;
       }
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
+    }
 
-      let destination = data.redirect;
-      if (!destination) {
-        const toDashboard = /@dev\.ng$/i.test(email);
-        destination = toDashboard ? 'dashboard.html' : 'index.html';
-      } else {
-        // Normalize server redirect: strip leading slash so it's relative
-        destination = destination.replace(/^\//, '');
-      }
+    // Handle login - check for token
+    if (!data.token) {
+      error.textContent = 'Login failed: No token received';
+      return;
+    }
 
-      // handle signup responses
-      if (isRegistration) {
-        if (data.exists) {
-          error.textContent = 'An account with that email already exists.';
-        } else if (data.emailError) {
-          error.textContent = 'Account created but verification email failed to send. Contact support.';
-        } else {
-          // successful signup — redirect
-          window.location.href = destination;
-        }
-      } else {
-  // login — redirect
-  window.location.href = destination;
-      }
-      authentication.reset();
-    }).catch(err => {
-      console.error('Network error', err);
-      error.textContent = 'Network error: ' + (err.message || err);
-    });
+    // Store token
+    localStorage.setItem('token', data.token);
+
+    // Determine redirect
+    let destination = data.redirect;
+    if (!destination) {
+      const toDashboard = /@dev\.ng$/i.test(email);
+      destination = toDashboard ? 'dashboard.html' : 'index.html';
+    } else {
+      destination = destination.replace(/^\//, '');
+    }
+
+    // Success message before redirect
+    error.style.color = 'green';
+    error.textContent = 'Login successful! Redirecting...';
+
+    // Small delay to show message, then redirect
+    setTimeout(() => {
+      window.location.href = destination;
+    }, 500);
+
+  } catch (err) {
+    console.error('Network error', err);
+    error.textContent = 'Network error: ' + (err.message || err);
   }
 });
 

@@ -81,8 +81,18 @@ router.post('/login', async (req, res) => {
     await user.save();
 
   // set HttpOnly cookies for refresh token and short-lived access token (so frontend fetch with credentials works)
-  res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: false, sameSite: 'Lax', maxAge: 7*24*3600*1000 });
-  res.cookie('accessToken', accessToken, { httpOnly: true, secure: false, sameSite: 'Lax', maxAge: 15*60*1000 });
+res.cookie('refreshToken', refreshToken, { 
+  httpOnly: true, 
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+  maxAge: 7*24*3600*1000 
+});
+res.cookie('accessToken', accessToken, { 
+  httpOnly: true, 
+  secure: process.env.NODE_ENV === 'production', 
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 15*60*1000 
+});
 
     // create security log for successful login
     try {
