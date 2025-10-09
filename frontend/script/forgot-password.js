@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/forgot', {
+      const res = await fetch(`${window.API_CONFIG?.BASE_URL || 'http://localhost:5000'}/api/auth/forgot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

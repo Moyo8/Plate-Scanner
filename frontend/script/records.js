@@ -21,7 +21,7 @@ let pendingDeleteId = null; // Store ID of plate to delete
 
 async function loadPlates() {
   try {
-  const res = await fetch('http://localhost:5000/api/plates');
+    const res = await fetch(`${API_CONFIG.BASE_URL}/api/plates`);
     platesData = await res.json();
     renderPlates(platesData); // Render plates and update count
   } catch (err) {
@@ -124,7 +124,7 @@ document.getElementById("filterForm").addEventListener("submit", async (e) => {
     if (status) params.append("status", status);
     if (admin) params.append("registeredBy", admin);
 
-  const res = await fetch(`http://localhost:5000/api/plates?${params.toString()}`);
+    const res = await fetch(`${API_CONFIG.BASE_URL}/api/plates?${params.toString()}`);
     const results = await res.json();
 
     platesSummary(results); // Render filtered results and update count
@@ -144,7 +144,7 @@ document.getElementById("resetBtn").addEventListener("click", (e) => {
 
 async function addPlate(newPlate) {
   try {
-  const res = await fetch('http://localhost:5000/api/plates', {
+    const res = await fetch(`${API_CONFIG.BASE_URL}/api/plates`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newPlate),
@@ -193,7 +193,7 @@ document.addEventListener("click", async (e) => {
 document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
   if (pendingDeleteId) {
     try {
-  await fetch(`http://localhost:5000/api/plates/${pendingDeleteId}`, { method: "DELETE" });
+      await fetch(`${API_CONFIG.BASE_URL}/api/plates/${pendingDeleteId}`, { method: "DELETE" });
       await loadPlates();
       document.getElementById("panelGrid").innerHTML = ""; // Clear grid after delete
       document.querySelector('#recordCount').innerHTML = platesData.length; // Update count
@@ -235,7 +235,7 @@ document.getElementById("addForm").addEventListener("submit", async (e) => {
 
   if (editId) {
     try {
-  const res = await fetch(`http://localhost:5000/api/plates/${editId}`, {
+      const res = await fetch(`${API_CONFIG.BASE_URL}/api/plates/${editId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPlate),

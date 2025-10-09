@@ -1,5 +1,5 @@
 let isRegistration = false;
-const API_BASE = window.API_BASE || (`http://${location.hostname}:5000`);
+const API_BASE = window.API_CONFIG?.BASE_URL || 'http://localhost:5000';
 
 const regBtn = document.querySelector('.reg-btn');
 const signupInputs = document.querySelectorAll('input.signupDet');
