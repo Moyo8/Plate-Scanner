@@ -9,25 +9,38 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:5500',
-  'http://127.0.0.1:3000'
-];
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [
+      'https://plate-scanner.onrender.com',
+     
+    ]
+  : [
+      'http://localhost:3000',
+      'http://127.0.0.1:5500',
+      'http://127.0.0.1:3000',
+      'http://localhost:5500'
+    ];
+
 app.use(cors({
   origin: (origin, callback) => {
-    // allow requests with no origin (like curl, server-to-server)
+    // Allow requests with no origin (like curl, Postman, server-to-server)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.warn('CORS blocked origin:', origin);
     return callback(new Error('CORS policy: Origin not allowed'));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
 
 // Serve frontend static files but don't auto-serve index.html so we control the root
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath, { index: false }));
-
 
 // Connect to MongoDB with basic error handling
 const mongooseOpts = {
@@ -106,9 +119,9 @@ app.post("/api/plates", async (req, res) => {
 app.put("/api/plates/:id", async (req, res) => {
   try {
     const updatedPlate = await Plate.findByIdAndUpdate(
-      req.params.id,      // plate ID from URL
-      req.body,           // new data
-      { new: true }       // return updated document
+      req.params.id,
+      req.body,
+      { new: true }
     );
     res.json(updatedPlate);
   } catch (err) {
@@ -133,24 +146,20 @@ app.use('/api/auth', authRoutes);
 const logsRoutes = require('./routes/logs');
 app.use('/api/logs', logsRoutes);
 
-// root -> serve landing page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'landing-page.html'));
+// Health check endpoint for Render
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
-const PORT = 5000;
-
-// Ensure explicit routes; redirect index to landing page to avoid it popping up
-app.get('/index.html', (req, res) => res.redirect('/'));
-app.get('/dashboard.html', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'dashboard.html'));
-});
 // Health check for DB
 app.get('/health/db', async (req, res) => {
   try {
-    const state = mongoose.connection.readyState; // 0 disconnected, 1 connected, 2 connecting, 3 disconnecting
+    const state = mongoose.connection.readyState;
     const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
-    // optional quick ping
     let pingOk = false;
     try {
       await mongoose.connection.db.admin().ping();
@@ -163,4 +172,20 @@ app.get('/health/db', async (req, res) => {
     res.status(500).json({ state: 'error', error: err.message });
   }
 });
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+
+// root -> serve landing page (only needed for local development)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'landing-page.html'));
+});
+
+app.get('/index.html', (req, res) => res.redirect('/'));
+app.get('/dashboard.html', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'dashboard.html'));
+});
+
+// Listen on PORT from environment or default to 5000
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
