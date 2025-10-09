@@ -9,10 +9,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
+// Updated CORS configuration for production
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      'https://plate-scanner.onrender.com',
-     
+      'https://plate-scanner.onrender.com',  // Your actual frontend URL
     ]
   : [
       'http://localhost:3000',

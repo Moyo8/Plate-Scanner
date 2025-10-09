@@ -15,12 +15,10 @@ regBtn.addEventListener('click', () => {
   document.querySelector('.signup-content p').innerText = isRegistration ? 'Already have an account?' : 'Don\'t have an account?';
   document.querySelector('.signup-content button').innerText = isRegistration ? 'Sign in' : 'Sign up';
 
-  // show/hide label elements
   signupLabels.forEach(lbl => {
     lbl.style.display = isRegistration ? 'block' : 'none';
   });
 
-  // show/hide and enable/disable input elements to avoid "invalid form control" when hidden
   signupInputs.forEach(input => {
     input.style.display = isRegistration ? 'block' : 'none';
     input.required = isRegistration;
@@ -30,110 +28,119 @@ regBtn.addEventListener('click', () => {
 
 authentication.addEventListener('submit', async (e) => {
   e.preventDefault();
+  
   const username = isRegistration ? document.getElementById('inputUsername').value.trim() : '';
   const email = document.getElementById('inputEmail').value.trim();
   const password = document.getElementById('inputPassword').value.trim();
   const confirm = isRegistration ? document.getElementById('confirmPassword').value.trim() : '';
   const error = document.getElementById('loginError');
 
+  // Clear previous errors
+  error.textContent = '';
+
   // Validation
   if (isRegistration && !username) {
     error.textContent = 'Username is required.';
     return;
-  } else if (!validateEmail(email)) {
+  }
+  
+  if (!validateEmail(email)) {
     error.textContent = 'Invalid email format.';
     return;
-  } else if (password.length < 6) {
+  }
+  
+  if (password.length < 6) {
     error.textContent = 'Password must be at least 6 characters.';
     return;
-  } else if (isRegistration && password !== confirm) {
+  }
+  
+  if (isRegistration && password !== confirm) {
     error.textContent = 'Passwords do not match.';
     return;
   }
 
-  error.textContent = '';
-  
+  // Prepare request
   const url = isRegistration ? `${API_BASE}/api/auth/signup` : `${API_BASE}/api/auth/login`;
   const body = isRegistration ? { name: username, email, password } : { email, password };
+
+  console.log('Attempting auth:', { url, isRegistration, email });
 
   try {
     const res = await fetch(url, {
       method: 'POST',
-      credentials: 'include', // CRITICAL for cookies
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
 
     let data;
     try {
-      const ct = res.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
         data = await res.json();
       } else {
-        data = { error: await res.text() };
+        const text = await res.text();
+        data = { error: text || `HTTP ${res.status}` };
       }
-    } catch (e) {
-      data = { error: 'Failed to parse response' };
+    } catch (parseErr) {
+      console.error('Failed to parse response:', parseErr);
+      data = { error: 'Failed to parse server response' };
     }
 
+    console.log('Auth response:', { status: res.status, data });
+
     if (!res.ok) {
-      console.error('Auth error', res.status, data);
-      error.textContent = data.error || `HTTP ${res.status}`;
+      error.textContent = data.error || data.message || `Error: ${res.status}`;
       return;
     }
 
-    // Handle signup
+    // Store token if provided
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      console.log('Token stored');
+    }
+
+    // Store user info
+    if (data.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('User info stored:', data.user);
+    }
+
+    // Handle signup success
     if (isRegistration) {
       if (data.exists) {
         error.textContent = 'An account with that email already exists.';
         return;
-      } else if (data.emailError) {
-        error.textContent = 'Account created but verification email failed to send. Contact support.';
-        return;
-      } else {
-        // Successful signup
-        error.style.color = 'green';
-        error.textContent = 'Account created successfully! Switching to login...';
-        authentication.reset();
-        // Switch to login mode after a brief delay
-        setTimeout(() => {
-          regBtn.click();
-          error.textContent = 'Please login with your new account.';
-        }, 1500);
-        return;
+      }
+      if (data.emailError) {
+        error.textContent = 'Account created but verification email failed. You can still log in.';
       }
     }
 
-    // Handle login - check for token
-    if (!data.token) {
-      error.textContent = 'Login failed: No token received';
-      return;
-    }
-
-    // Store token
-    localStorage.setItem('token', data.token);
-
-    // Determine redirect
+    // Determine redirect destination
     let destination = data.redirect;
     if (!destination) {
-      const toDashboard = /@dev\.ng$/i.test(email);
-      destination = toDashboard ? 'dashboard.html' : 'index.html';
+      // Check if admin email
+      const isAdmin = /@dev\.ng$/i.test(email);
+      destination = isAdmin ? 'dashboard.html' : 'index.html';
     } else {
+      // Remove leading slash if present
       destination = destination.replace(/^\//, '');
     }
 
-    // Success message before redirect
-    error.style.color = 'green';
-    error.textContent = 'Login successful! Redirecting...';
+    console.log('Redirecting to:', destination);
 
-    // Small delay to show message, then redirect
+    // Clear form and redirect
+    authentication.reset();
+    
+    // Use setTimeout to ensure storage completes before redirect
     setTimeout(() => {
       window.location.href = destination;
-    }, 500);
+    }, 100);
 
   } catch (err) {
-    console.error('Network error', err);
-    error.textContent = 'Network error: ' + (err.message || err);
+    console.error('Network error:', err);
+    error.textContent = 'Network error: Unable to connect to server. Please check your connection.';
   }
 });
 
