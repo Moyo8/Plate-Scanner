@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
 
-    <script>
+   <script>
     // Check if user is logged in and is admin
     (function() {
       const token = localStorage.getItem('token');
@@ -14,29 +14,22 @@
       // If no token or user, redirect to landing page
       if (!token || !userStr) {
         console.log('No auth found, redirecting to landing page');
-        window.location.replace('landing-page.html');
+        window.location.href = 'landing-page.html';
         return;
       }
       
       try {
         const user = JSON.parse(userStr);
-        console.log('Checking auth for dashboard:', user);
-        
         // Check if email ends with @dev.ng (admin check)
         if (!user.email || !/@dev\.ng$/i.test(user.email)) {
           console.log('Not an admin, redirecting to index');
-          window.location.replace('index.html');
+          window.location.href = 'index.html';
           return;
         }
-        
-        // Admin user, stay on dashboard
-        console.log('Admin authenticated - OK');
-        
+        console.log('Admin authenticated:', user);
       } catch (err) {
         console.error('Error parsing user data:', err);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.replace('landing-page.html');
+        window.location.href = 'landing-page.html';
       }
     })();
   </script>
