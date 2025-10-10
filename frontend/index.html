@@ -5,18 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlateScanner</title>
 
-  <script>
+ <script>
     // Check if user is logged in
     (function() {
       const token = localStorage.getItem('token');
-      const user = localStorage.getItem('user');
+      const userStr = localStorage.getItem('user');
       
       // If no token or user, redirect to landing page
-      if (!token || !user) {
+      if (!token || !userStr) {
         console.log('No auth found, redirecting to landing page');
-        window.location.href = 'landing-page.html';
-      } else {
-        console.log('User authenticated:', JSON.parse(user));
+        window.location.replace('landing-page.html');
+        return;
+      }
+      
+      try {
+        const user = JSON.parse(userStr);
+        console.log('User authenticated:', user);
+        
+        // If user has @dev.ng email, they should be on dashboard
+        if (user.email && /@dev\.ng$/i.test(user.email)) {
+          console.log('Admin user detected, redirecting to dashboard');
+          window.location.replace('dashboard.html');
+          return;
+        }
+        
+        // Regular user, stay on this page
+        console.log('Regular user on index page - OK');
+        
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.replace('landing-page.html');
       }
     })();
   </script>
