@@ -4,22 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlateScanner</title>
-
-  <script>
-    // Check if user is logged in
-    (function() {
-      const token = localStorage.getItem('token');
-      const user = localStorage.getItem('user');
-      
-      // If no token or user, redirect to landing page
-      if (!token || !user) {
-        console.log('No auth found, redirecting to landing page');
-        window.location.href = 'landing-page.html';
-      } else {
-        console.log('User authenticated:', JSON.parse(user));
-      }
-    })();
-  </script>
   <script src="js/config.js"></script>
   
   <link rel="stylesheet" href="styles/general.css">
