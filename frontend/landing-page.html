@@ -3,6 +3,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>landing-page</title>
+  
+   <script>
+    (function() {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      
+      // If already logged in, redirect to appropriate page
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          
+          // Check if admin
+          if (user.email && /@dev\.ng$/i.test(user.email)) {
+            window.location.replace('dashboard.html');
+          } else {
+            window.location.replace('index.html');
+          }
+        } catch (err) {
+          // Invalid data, clear it
+          localStorage.clear();
+        }
+      }
+    })();
+  </script>
+  
   <script src="js/config.js"></script>
   <link rel="stylesheet" href="styles/landing-page.css">
 </head>

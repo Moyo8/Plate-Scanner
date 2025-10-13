@@ -4,6 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PlateScanner</title>
+
+  <script>
+    (function() {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      
+      if (!token || !userStr) {
+        window.location.replace('landing-page.html');
+        return;
+      }
+      
+      try {
+        const user = JSON.parse(userStr);
+        
+        if (user.email && /@dev\.ng$/i.test(user.email)) {
+          window.location.replace('dashboard.html');
+          return;
+        }
+        
+      } catch (err) {
+        localStorage.clear();
+        window.location.replace('landing-page.html');
+      }
+    })();
+  </script>
   <script src="js/config.js"></script>
   
   <link rel="stylesheet" href="styles/general.css">
