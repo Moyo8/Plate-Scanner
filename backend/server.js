@@ -12,10 +12,12 @@ app.use(cookieParser());
 // Updated CORS configuration for production
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      'https://plate-scanner.onrender.com',  // Your actual frontend URL
+       process.env.CLIENT_URL || 'https://plate-scanner-api.onrender.com',
+      'https://plate-scanner-api.onrender.com'
     ]
   : [
       'http://localhost:3000',
+      'http://localhost:5000',
       'http://127.0.0.1:5500',
       'http://127.0.0.1:3000',
       'http://localhost:5500'

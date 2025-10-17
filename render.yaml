@@ -5,8 +5,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd backend && npm install
-    startCommand: npm start
+    buildCommand: npm install
+    startCommand: node backend\server.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,6 +18,8 @@ services:
         sync: false  
       - key: MAILTRAP_TOKEN
         sync: false
+      - key: CLIENT_URL
+        Value: https://plate-scanner-api.onrender.com
     healthCheckPath: /api/health
 
   # Frontend Static Site
