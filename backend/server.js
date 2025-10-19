@@ -148,10 +148,6 @@ app.use('/api/auth', authRoutes);
 const logsRoutes = require('./routes/logs');
 app.use('/api/logs', logsRoutes);
 
-// dev-only seed routes (populate sample data)
-const seedRoutes = require('./routes/seed');
-app.use('/api/seed', seedRoutes);
-
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 
