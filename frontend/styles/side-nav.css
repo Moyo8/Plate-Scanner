@@ -26,6 +26,16 @@
   text-decoration: none;
 }
 
+.sidenav button {
+  display: block;
+  background: none;
+  border: none;
+  width: 100%;
+  color: inherit;
+  padding: 0;
+  font: inherit;
+}
+
 .sidenav-link,
 .sidenav p {
   height: 47px;

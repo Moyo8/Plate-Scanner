@@ -54,8 +54,8 @@
         </div>
         <img class="current-user-picture" src="images/icons/avatar-icon.png">
         <div class="user-info">
-          <p class="user-name">Xultan_007</p>
-          <p class="user-email">sultanafolabi@dev.ng</p>
+          <p class="user-name">Moyosore_8</p>
+          <p class="user-email">adeyefamoyo@dev.ng</p>
         </div> 
       </div>
     </header>
@@ -109,10 +109,10 @@
           <img src="images/icons/help-icon.png">
           <div>Help</div>
         </div>
-        <div class="sidenav-link">
+        <button type="button" class="sidenav-link" id="logoutBtn">
           <img src="images/icons/logout-icon.png">
           <div>Logout</div>
-        </div>
+        </button>
       </div>
     </nav>
 
@@ -122,10 +122,10 @@
         <div class="dev-content">
           <img src="images/profile-pic/profile-1.jpg">
           <div class="dev-info">
-            <p>User-name: Xultan_007</p>
+            <p>User-name: Moyosore_8</p>
             <p>Role: Admin</p>
             <p>Status: Active</p>
-            <p>Email: sultanafolabi@dev.ng</p>
+            <p>Email: adeyefamoyo@dev.ng</p>
           </div>
         </div>
         <hr/>
@@ -138,7 +138,7 @@
             </div>
             <div>
               <p class="panel-title">Users</p>
-              <p class="panel-count">30</p>
+              <p id="totalUsersCount" class="panel-count">0</p>
             </div>
           </div>
           <div class="quick-content">
@@ -158,7 +158,7 @@
             </div>
             <div>
               <p class="panel-title">Dev</p>
-              <p class="panel-count">7</p>
+              <p id="adminCount" class="panel-count">0</p>
             </div>
           </div>
           <div class="quick-content">
@@ -168,7 +168,7 @@
             </div>
             <div>
               <p class="panel-title">Flagged</p>
-              <p class="panel-count">2</p>
+              <p id="flaggedCount" class="panel-count">0</p>
             </div>
           </div>
         </div>
@@ -192,7 +192,7 @@
 
       <section class="list" id="view-logs" hidden>
         <h2>Security Logs</h2>
-          <input class="mini-search-bar" type="text" id="plateSearch" placeholder="Search Logs">
+    <input class="mini-search-bar" type="text" id="logSearch" placeholder="Search Logs">
           <table border="1" width="100%">
             <thead>
               <tr>
@@ -305,7 +305,10 @@
           const params = new URLSearchParams({ limit: '200' });
           if (q) params.set('q', q);
           const url = API_BASE.replace(/\/$/, '') + '/api/logs?' + params.toString();
-          const res = await fetch(url, { credentials: 'include' });
+          const headers = {};
+          const storedToken = localStorage.getItem('token');
+          if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+          const res = await fetch(url, { credentials: 'include', headers });
           if (!res.ok) {
             if (res.status === 401) throw new Error('Unauthorized - please log in');
             throw new Error('Failed to fetch logs');
@@ -313,7 +316,17 @@
           const data = await res.json();
           const tbody = document.getElementById('plateTable');
           tbody.innerHTML = '';
-          (data.logs || []).forEach(log => {
+          const logs = data.logs || [];
+          if (!logs.length) {
+            const emptyRow = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            cell.textContent = 'No logs found';
+            emptyRow.appendChild(cell);
+            tbody.appendChild(emptyRow);
+            return;
+          }
+          logs.forEach(log => {
             const tr = document.createElement('tr');
             const userTd = document.createElement('td');
             userTd.textContent = log.username || log.email || (log.userId || 'Unknown');
@@ -332,6 +345,14 @@
           });
         } catch (err) {
           console.error('Load logs error:', err && (err.stack || err));
+          const tbody = document.getElementById('plateTable');
+          tbody.innerHTML = '';
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 4;
+          cell.textContent = err.message || 'Failed to load logs';
+          row.appendChild(cell);
+          tbody.appendChild(row);
         }
       }
 
@@ -341,6 +362,14 @@
         if (location.hash.includes('/logs')) {
           document.getElementById('view-logs').hidden = false;
           loadLogs();
+        }
+
+        const logSearchInput = document.getElementById('logSearch');
+        if (logSearchInput) {
+          logSearchInput.addEventListener('input', (e) => {
+            const value = e.target.value.trim();
+            loadLogs(value);
+          });
         }
 
         // simple hash change support

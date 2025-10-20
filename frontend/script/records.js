@@ -19,15 +19,71 @@ showRoute(location.hash || '#/users');
 let platesData = [];
 let pendingDeleteId = null; // Store ID of plate to delete
 
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await fetch(`${API_CONFIG.BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (err) {
+      console.error('Error logging out:', err);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'landing-page.html';
+    }
+  });
+}
+
+const totalUsersCountEl = document.getElementById('totalUsersCount');
+const adminCountEl = document.getElementById('adminCount');
+const flaggedCountEl = document.getElementById('flaggedCount');
+const recordCountEl = document.getElementById('recordCount');
+
+function setCountValue(element, value, fallback = '0') {
+  if (!element) return;
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    element.textContent = value.toString();
+  } else {
+    element.textContent = fallback;
+  }
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch(`${API_CONFIG.BASE_URL}/api/stats/overview`, { credentials: 'include' });
+    if (!res.ok) throw new Error('Failed to fetch stats');
+    const data = await res.json();
+    setCountValue(totalUsersCountEl, data.totalActiveUsers);
+    setCountValue(adminCountEl, data.adminCount);
+    setCountValue(flaggedCountEl, data.flaggedCount);
+    setCountValue(recordCountEl, data.totalRegisteredPlates);
+  } catch (err) {
+    console.error('Error fetching stats:', err);
+    setCountValue(totalUsersCountEl, null, '--');
+    setCountValue(adminCountEl, null, '--');
+    const flaggedLocal = platesData.filter(
+      p => (p.status || '').toLowerCase() === 'flagged'
+    ).length;
+    setCountValue(flaggedCountEl, flaggedLocal, '0');
+    setCountValue(recordCountEl, platesData.length, '0');
+  }
+}
+
 async function loadPlates() {
   try {
     const res = await fetch(`${API_CONFIG.BASE_URL}/api/plates`);
     platesData = await res.json();
     renderPlates(platesData); // Render plates and update count
+    platesSummary(platesData);
+    await loadStats();
   } catch (err) {
     console.error("Error fetching plates:", err);
     document.getElementById('plateRow').innerHTML = "<p>Error loading plates</p>";
     document.querySelector('#recordCount').innerHTML = "0";
+    await loadStats();
   }
 }
 
@@ -128,10 +184,12 @@ document.getElementById("filterForm").addEventListener("submit", async (e) => {
     const results = await res.json();
 
     platesSummary(results); // Render filtered results and update count
+    await loadStats();
   } catch (err) {
     console.error("Error fetching filtered plates:", err);
     document.getElementById("panelGrid").innerHTML = "<p>Error loading plates</p>";
     document.querySelector('#recordCount').innerHTML = "0";
+    await loadStats();
   }
 });
 
@@ -140,6 +198,7 @@ document.getElementById("resetBtn").addEventListener("click", (e) => {
   document.getElementById("filterForm").reset();
   document.getElementById("panelGrid").innerHTML = "";
   document.querySelector('#recordCount').innerHTML = "0"; // Reset count
+  loadStats();
 });
 
 async function addPlate(newPlate) {
@@ -195,8 +254,8 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
     try {
       await fetch(`${API_CONFIG.BASE_URL}/api/plates/${pendingDeleteId}`, { method: "DELETE" });
       await loadPlates();
-      document.getElementById("panelGrid").innerHTML = ""; // Clear grid after delete
-      document.querySelector('#recordCount').innerHTML = platesData.length; // Update count
+  platesSummary(platesData);
+  document.querySelector('#recordCount').innerHTML = platesData.length; // Update count
       showPopup("Plate deleted successfully ✅");
     } catch (err) {
       console.error("Error deleting plate:", err);
@@ -243,7 +302,7 @@ document.getElementById("addForm").addEventListener("submit", async (e) => {
       if (!res.ok) throw new Error("Failed to update plate");
       await res.json();
       await loadPlates();
-      document.getElementById("panelGrid").innerHTML = "";
+      platesSummary(platesData);
       document.querySelector('#recordCount').innerHTML = platesData.length; // Update count
       resetForm();
       showPopup("Plate updated successfully ✅");
@@ -254,7 +313,7 @@ document.getElementById("addForm").addEventListener("submit", async (e) => {
   } else {
     try {
       await addPlate(newPlate);
-      document.getElementById("panelGrid").innerHTML = "";
+      platesSummary(platesData);
       document.querySelector('#recordCount').innerHTML = platesData.length; // Update count
       resetForm();
       showPopup("Plate added successfully ✅");

@@ -110,14 +110,18 @@ res.cookie('accessToken', accessToken, {
   }
 });
 
-// Logout - frontend should discard token; include endpoint for parity
+// Logout - clear auth cookies and forget refresh tokens
 router.post('/logout', (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
   if (refreshToken) {
     // remove refresh token from any user
     User.updateMany({}, { $pull: { refreshTokens: { token: refreshToken } } }).exec();
   }
-  res.clearCookie('refreshToken');
+
+  const secure = process.env.NODE_ENV === 'production';
+  const sameSite = secure ? 'none' : 'lax';
+  res.clearCookie('refreshToken', { httpOnly: true, secure, sameSite, path: '/' });
+  res.clearCookie('accessToken', { httpOnly: true, secure, sameSite, path: '/' });
   res.json({ message: 'Logged out' });
 });
 
