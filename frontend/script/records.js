@@ -30,6 +30,12 @@ function saveSettings(settings) {
 }
 
 const settings = loadSettings();
+const headerUserNameEl = document.getElementById('headerUserName');
+const headerUserEmailEl = document.getElementById('headerUserEmail');
+const profileUserNameEl = document.getElementById('profileUserName');
+const profileUserEmailEl = document.getElementById('profileUserEmail');
+const greetingNameEl = document.getElementById('greetingName');
+
 
 function showRoute(hash) {
   Object.values(routes).forEach(id => {
@@ -121,9 +127,17 @@ const savedUser = (() => {
   }
 })();
 
+const displayName = savedUser?.name || savedUser?.username || (savedUser?.email ? savedUser.email.split('@')[0] : 'Admin');
+const displayEmail = savedUser?.email || '';
+
+if (headerUserNameEl) headerUserNameEl.textContent = displayName;
+if (greetingNameEl) greetingNameEl.textContent = displayName;
+if (profileUserNameEl) profileUserNameEl.textContent = displayName;
+
+if (headerUserEmailEl) headerUserEmailEl.textContent = displayEmail || '--';
+if (profileUserEmailEl) profileUserEmailEl.textContent = displayEmail || '--';
 if (helpCurrentUserEl) {
-  const label = savedUser?.email || savedUser?.name || 'Unknown user';
-  helpCurrentUserEl.textContent = label;
+  helpCurrentUserEl.textContent = displayEmail ? `${displayName} (${displayEmail})` : displayName;
 }
 
 if (helpActionButtons.length) {

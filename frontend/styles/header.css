@@ -4,6 +4,7 @@
 
   display: flex;
   justify-content: space-between;
+  gap: 16px;
 
   position: fixed;
   top: 0;
@@ -13,6 +14,7 @@
 
   background-color: rgb(248, 248, 248);
   border-bottom: 1px solid rgb(222, 222, 222);
+  padding: 0 24px;
 }
 
 .left-section {
@@ -27,8 +29,8 @@
 
 .middle-section {
   flex: 1.5;
-  margin-left: 60px;
-  margin-right: 40px;
+  margin-left: 40px;
+  margin-right: 32px;
   max-width: 500px;
   display: flex;
   align-items: center;
@@ -54,11 +56,10 @@
 
 .right-section {
   flex: 2;
-  margin-right: 40px;
   display: flex;
   align-items: center;
   justify-content: right;
-  gap: 30px;
+  gap: 24px;
   flex-shrink: 1;
 }
 
@@ -111,4 +112,62 @@
   font-size: 12px;
   margin: 0;
   color: gray;
+}
+
+@media (max-width: 1024px) {
+  .middle-section {
+    margin-left: 24px;
+    margin-right: 24px;
+  }
+
+  .right-section {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  .middle-section {
+    display: none;
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .left-section {
+    flex: 0 0 auto;
+  }
+
+  .right-section {
+    flex: 1;
+    justify-content: flex-end;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    height: 64px;
+  }
+
+  .left-section img {
+    height: 58px;
+  }
+
+  .notification-icon {
+    height: 26px;
+  }
+
+  .notification-count {
+    top: -4px;
+    right: -4px;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .current-user-picture {
+    height: 32px;
+  }
 }

@@ -7,13 +7,14 @@
 
   background-color: white;
   border-right: 1px solid rgb(222, 222, 222);
-  width: 170px;
+  width: 200px;
   z-index: 110;
 
-  padding-top: 5px;
+  padding: 12px 0;
   font-family: "Inter", Sans-serif;
   font-style: normal;
   color: gray;
+  box-shadow: 4px 0 16px rgba(15, 23, 42, 0.08);
 }
 
 .top-section {
@@ -44,6 +45,8 @@
   align-items: center;
   flex-direction: row;
   margin-left: 15px;
+  gap: 10px;
+  white-space: nowrap;
 }
 .sidenav-link:hover {
   background-color: lightgrey;
@@ -72,4 +75,104 @@
 
 .content {
   padding: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .sidenav {
+    width: 180px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sidenav {
+    width: 150px;
+  }
+}
+
+@media (max-width: 900px) {
+  .sidenav {
+    position: fixed;
+    top: 70px;
+    bottom: auto;
+    right: 0;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgb(222, 222, 222);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .sidenav::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .sidenav::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.45);
+    border-radius: 999px;
+  }
+
+  .sidenav .top-section,
+  .sidenav .bottom-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sidenav .bottom-section {
+    margin-left: auto;
+  }
+
+  .sidenav p {
+    display: none;
+  }
+
+  .sidenav-link,
+  .sidenav p {
+    margin-left: 0;
+    height: auto;
+  }
+
+  .sidenav-link {
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.38);
+    background-color: #f8fafc;
+    color: #0f172a;
+    transition: background-color 0.2s ease;
+  }
+
+  .sidenav-link:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+    padding-left: 16px;
+  }
+
+  .sidenav-link img {
+    height: 20px;
+  }
+
+  .sidenav button {
+    width: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidenav {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .sidenav-link {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .sidenav-link img {
+    height: 18px;
+  }
 }
