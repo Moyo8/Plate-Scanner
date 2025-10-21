@@ -45,6 +45,8 @@
 
     body::before{ content:''; position:fixed; inset:0; background:linear-gradient(rgba(3,7,18,0.45), rgba(3,7,18,0.45)); z-index:0 }
 
+  .page-root{ flex:1 0 auto; width:100%; display:flex; align-items:center; justify-content:center; min-height:calc(100vh - var(--footer-offset, 0px)); padding:18px; box-sizing:border-box; }
+
   .hero-card{ position:relative; z-index:1; width:min(980px,92%); background:var(--card-bg); border-radius:14px; padding:28px; box-shadow:0 24px 60px rgba(2,6,23,.45); border:1px solid rgba(15,23,42,0.06); max-height:calc(100vh - 56px); overflow:auto }
     .hero-header{ margin-bottom:12px }
   .hero-title{ font-size:30px; margin:0 0 8px; color:#07142a }
@@ -66,23 +68,41 @@
 </head>
 <body>
     <a id="activityLink" href="activity-log.html" class="activity-link" aria-label="Activity logs">Activity logs</a>
-  <div class="hero-card">
-    <div class="hero-header">
-      <h1 class="hero-title">Verify Vehicle Plate Numbers Instantly</h1>
-      <p class="hero-sub">Only letters, numbers, and dash ( - ) are allowed. Example: <strong>AW795-AAA</strong></p>
+  <div class="page-root">
+    <div class="hero-card">
+      <div class="hero-header">
+        <h1 class="hero-title">Verify Vehicle Plate Numbers Instantly</h1>
+        <p class="hero-sub">Only letters, numbers, and dash ( - ) are allowed. Example: <strong>AW795-AAA</strong></p>
+      </div>
+
+      <form id="lookupForm" class="lookup-row" novalidate>
+        <label class="sr-only" for="plate">Plate Number</label>
+        <input id="plate" name="plate" class="search-input" type="text" placeholder="Enter plate number" inputmode="latin" autocomplete="off" maxlength="12" pattern="^[A-Za-z0-9-]+$" required />
+        <button type="submit" id="checkBtn" class="check-btn">Check</button>
+      </form>
+
+      <div id="result" style="margin-top:18px; display:none; padding:12px; border-radius:8px"></div>
     </div>
-
-    <form id="lookupForm" class="lookup-row" novalidate>
-      <label class="sr-only" for="plate">Plate Number</label>
-      <input id="plate" name="plate" class="search-input" type="text" placeholder="Enter plate number" inputmode="latin" autocomplete="off" maxlength="12" pattern="^[A-Za-z0-9-]+$" required />
-      <button type="submit" id="checkBtn" class="check-btn">Check</button>
-    </form>
-
-    <div id="result" style="margin-top:18px; display:none; padding:12px; border-radius:8px"></div>
   </div>
 
   <script type="module">
     import { plates } from './data/plates.js';
+
+    const LOG_KEY = 'plate_scanner_activity_log_v1';
+
+    const readLog = () => {
+      try {
+        return JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+      } catch (err) {
+        return [];
+      }
+    };
+
+    const appendLog = (entry) => {
+      const items = readLog();
+      items.unshift({ ...entry, time: new Date().toISOString() });
+      localStorage.setItem(LOG_KEY, JSON.stringify(items.slice(0, 100)));
+    };
 
     // Elements
     const input = document.getElementById('plate');
@@ -120,12 +140,18 @@
       }
 
   const found = plateMap.get(value);
-  if (found) showPlate(found);
-  else showMessage(`The plate ${value} is fake.`, 'fake');
+  if (found) {
+    showPlate(found);
+    appendLog({ plate: found.plateNumber, result: 'real', status: found.status || 'Unknown' });
+  } else {
+    showMessage(`The plate ${value} is fake.`, 'fake');
+    appendLog({ plate: value, result: 'fake' });
+  }
     });
 
     function showPlate(p) {
-      const status = (p.status || 'Unknown').toLowerCase();
+      const statusRaw = p.status || 'Unknown';
+      const status = statusRaw.toLowerCase();
       let bg = '#ecfdf5';
       let color = '#065f46';
       if (status === 'expired') { bg = '#fff7ed'; color = '#92400e' }
@@ -135,7 +161,7 @@
       result.style.background = bg;
       result.style.color = color;
       result.innerHTML = `
-        <strong style="display:block; margin-bottom:6px">Plate: ${p.plateNumber} — <span style="font-weight:800;">${p.status}</span></strong>
+        <strong style="display:block; margin-bottom:6px">Plate: ${p.plateNumber} — <span style="font-weight:800;">${statusRaw}</span></strong>
         <div style="font-size:14px; color:rgba(0,0,0,0.75)">
           <div><strong>Owner:</strong> ${p.ownerInfo?.name || '—'}</div>
           <div><strong>Phone:</strong> ${p.ownerInfo?.phoneNo || '—'}</div>

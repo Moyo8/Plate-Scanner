@@ -3,8 +3,33 @@ const routes = {
   '#/plates': 'view-plates',
   '#/logs': 'view-logs',
   '#/admin': 'view-admin',
-  '#/flagged': 'view-flagged'
+  '#/flagged': 'view-flagged',
+  '#/help': 'view-help'
 };
+
+const SETTINGS_KEY = 'plate_scanner_admin_settings_v1';
+
+const defaultSettings = {
+  hideNotifications: false,
+  autoRefresh: false,
+  defaultView: '#/users'
+};
+
+function loadSettings() {
+  try {
+    const stored = localStorage.getItem(SETTINGS_KEY);
+    return stored ? { ...defaultSettings, ...JSON.parse(stored) } : { ...defaultSettings };
+  } catch (err) {
+    console.error('Failed to parse settings', err);
+    return { ...defaultSettings };
+  }
+}
+
+function saveSettings(settings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+const settings = loadSettings();
 
 function showRoute(hash) {
   Object.values(routes).forEach(id => {
@@ -14,7 +39,10 @@ function showRoute(hash) {
 }
 
 window.addEventListener('hashchange', () => showRoute(location.hash));
-showRoute(location.hash || '#/users');
+showRoute(location.hash || settings.defaultView);
+if ((!location.hash || !routes[location.hash]) && settings.defaultView) {
+  location.hash = settings.defaultView;
+}
 
 let platesData = [];
 let pendingDeleteId = null; // Store ID of plate to delete
@@ -41,6 +69,94 @@ const totalUsersCountEl = document.getElementById('totalUsersCount');
 const adminCountEl = document.getElementById('adminCount');
 const flaggedCountEl = document.getElementById('flaggedCount');
 const recordCountEl = document.getElementById('recordCount');
+const flaggedRowsEl = document.getElementById('flaggedRows');
+const flaggedTotalEl = document.getElementById('flaggedTotal');
+const flaggedUpdatedEl = document.getElementById('flaggedUpdated');
+const flaggedSearchInput = document.getElementById('flaggedSearch');
+const exportFlaggedBtn = document.getElementById('exportFlagged');
+const flaggedGoToAdmin = document.getElementById('flaggedGoToAdmin');
+const helpFaqEl = document.getElementById('helpFaq');
+const helpApiBaseEl = document.getElementById('helpApiBase');
+const helpLastSyncEl = document.getElementById('helpLastSync');
+const helpCurrentUserEl = document.getElementById('helpCurrentUser');
+const helpActionButtons = document.querySelectorAll('[data-help-action]');
+
+const helpFaqData = [
+  {
+    question: 'How do I add or update a plate?',
+    answer: 'Open the Admin Panel, use the form on the right to add a plate, or click the edit button next to an existing entry to update it.'
+  },
+  {
+    question: 'Why are my stats not updating?',
+    answer: 'Stats refresh automatically on page load. Use the "Refresh dashboard data" quick action or enable auto-refresh from Settings if you want scheduled updates.'
+  },
+  {
+    question: 'Who can access flagged reports?',
+    answer: 'Any authenticated admin can review flagged plates. Use the Flagged Report tab to filter, export, or jump to the Admin panel for remediation.'
+  }
+];
+
+function renderFaq() {
+  if (!helpFaqEl) return;
+  helpFaqEl.innerHTML = helpFaqData.map(({ question, answer }, idx) => `
+    <article class="faq-item">
+      <button type="button" aria-expanded="${idx === 0 ? 'true' : 'false'}">
+        <span>${question}</span>
+        <span>${idx === 0 ? '-' : '+'}</span>
+      </button>
+      <p ${idx === 0 ? '' : 'hidden'}>${answer}</p>
+    </article>
+  `).join('');
+}
+
+renderFaq();
+
+if (helpApiBaseEl) helpApiBaseEl.textContent = API_CONFIG.BASE_URL || '--';
+
+const savedUser = (() => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || 'null');
+  } catch (err) {
+    return null;
+  }
+})();
+
+if (helpCurrentUserEl) {
+  const label = savedUser?.email || savedUser?.name || 'Unknown user';
+  helpCurrentUserEl.textContent = label;
+}
+
+if (helpActionButtons.length) {
+  helpActionButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.helpAction;
+      if (action === 'refresh') {
+        loadPlates();
+      } else if (action === 'viewLogs') {
+        location.hash = '#/logs';
+      } else if (action === 'seed') {
+        alert('Sample plates are seeded via scripts/seed-plates.js. Run `npm run seed` from the project root to refresh demo data.');
+      }
+    });
+  });
+}
+
+if (helpFaqEl) {
+  helpFaqEl.addEventListener('click', (event) => {
+    const button = event.target.closest('button');
+    if (!button) return;
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    const article = button.closest('.faq-item');
+    const answer = article.querySelector('p');
+    button.setAttribute('aria-expanded', (!expanded).toString());
+  button.lastElementChild.textContent = expanded ? '+' : '-';
+    if (expanded) {
+      answer.setAttribute('hidden', '');
+    } else {
+      answer.removeAttribute('hidden');
+    }
+  });
+}
 
 function setCountValue(element, value, fallback = '0') {
   if (!element) return;
@@ -76,13 +192,17 @@ async function loadPlates() {
   try {
     const res = await fetch(`${API_CONFIG.BASE_URL}/api/plates`);
     platesData = await res.json();
-    renderPlates(platesData); // Render plates and update count
-    platesSummary(platesData);
+  renderPlates(platesData); // Render plates and update count
+  platesSummary(platesData);
+  const searchTerm = flaggedSearchInput?.value || '';
+  renderFlagged(platesData, searchTerm);
     await loadStats();
+    updateLastSync();
   } catch (err) {
     console.error("Error fetching plates:", err);
     document.getElementById('plateRow').innerHTML = "<p>Error loading plates</p>";
     document.querySelector('#recordCount').innerHTML = "0";
+  renderFlagged([], flaggedSearchInput?.value || '');
     await loadStats();
   }
 }
@@ -111,6 +231,89 @@ function renderPlates(data) {
 
   document.getElementById('plateRow').innerHTML = platesHTML || "<p>No plates found</p>";
   document.querySelector('#recordCount').innerHTML = data.length; // Update count
+}
+
+function renderFlagged(source, query = '') {
+  if (!flaggedRowsEl || !flaggedTotalEl || !flaggedUpdatedEl) return;
+  const lower = query.trim().toLowerCase();
+  const allFlagged = (source || []).filter((item) => (item.status || '').toLowerCase() === 'flagged');
+  const flagged = allFlagged.filter(item => {
+    if (!lower) return true;
+    const owner = item.ownerInfo?.name || '';
+    return item.plateNumber?.toLowerCase().includes(lower) || owner.toLowerCase().includes(lower);
+  });
+
+  flaggedTotalEl.textContent = allFlagged.length.toString();
+
+  if (!flagged.length) {
+    flaggedRowsEl.innerHTML = '<div class="flagged-empty">No flagged plates found.</div>';
+    return;
+  }
+
+  flaggedRowsEl.innerHTML = flagged.map(item => {
+  const expires = item.carInfo?.expires ? new Date(item.carInfo.expires).toLocaleDateString() : '--';
+  const note = item.carInfo?.category ? `Category: ${item.carInfo.category}` : '--';
+  const updated = item.updatedAt ? new Date(item.updatedAt).toLocaleString() : '--';
+  const model = item.carInfo?.model || '--';
+  const color = item.carInfo?.color ? ` - ${item.carInfo.color}` : '';
+    return `
+      <div class="flagged-row">
+  <div><strong>${item.plateNumber || '--'}</strong></div>
+  <div>${item.ownerInfo?.name || '--'}<br><span class="muted-text">${item.ownerInfo?.phoneNo || ''}</span></div>
+        <div>${model}${color}</div>
+        <div>${note}<br><span class="muted-text">Expires: ${expires}</span></div>
+        <div>${updated}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function exportFlaggedCsv() {
+  const flagged = platesData.filter(item => (item.status || '').toLowerCase() === 'flagged');
+  if (!flagged.length) {
+    alert('No flagged plates to export');
+    return;
+  }
+  const header = ['plateNumber', 'ownerName', 'ownerPhone', 'model', 'color', 'category', 'expires', 'updatedAt'];
+  const rows = flagged.map(item => [
+    item.plateNumber || '',
+    item.ownerInfo?.name || '',
+    item.ownerInfo?.phoneNo || '',
+    item.carInfo?.model || '',
+    item.carInfo?.color || '',
+    item.carInfo?.category || '',
+    item.carInfo?.expires || '',
+    item.updatedAt || ''
+  ]);
+  const data = [header, ...rows]
+    .map(cols => cols.map(col => `"${String(col ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'flagged-plates.csv';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+if (flaggedSearchInput) {
+  flaggedSearchInput.addEventListener('input', (event) => {
+    renderFlagged(platesData, event.target.value || '');
+  });
+}
+
+if (exportFlaggedBtn) {
+  exportFlaggedBtn.addEventListener('click', exportFlaggedCsv);
+}
+
+if (flaggedGoToAdmin) {
+  flaggedGoToAdmin.addEventListener('click', () => {
+    location.hash = '#/admin';
+  });
 }
 
 function searchPlates(query) {
@@ -341,4 +544,106 @@ function resetForm() {
   document.getElementById("submitBtn").textContent = "Add Plate";
   document.getElementById("cancelBtn").style.display = "none";
   addPlateH2.textContent = "Add New Plate";
+}
+
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const closeSettings = document.getElementById('closeSettings');
+const settingsForm = document.getElementById('settingsForm');
+const resetSettingsBtn = document.getElementById('resetSettings');
+const hideNotificationsToggle = document.getElementById('hideNotifications');
+const autoRefreshToggle = document.getElementById('autoRefresh');
+const defaultViewSelect = document.getElementById('defaultView');
+const notificationBadge = document.querySelector('.notification-count');
+
+function applyNotificationPref(pref) {
+  if (!notificationBadge) return;
+  notificationBadge.style.display = pref ? 'none' : '';
+}
+
+applyNotificationPref(settings.hideNotifications);
+
+if (hideNotificationsToggle) hideNotificationsToggle.checked = settings.hideNotifications;
+if (autoRefreshToggle) autoRefreshToggle.checked = settings.autoRefresh;
+if (defaultViewSelect) defaultViewSelect.value = settings.defaultView;
+
+function openSettings() {
+  if (settingsPanel) settingsPanel.hidden = false;
+}
+
+function closeSettingsPanel() {
+  if (settingsPanel) settingsPanel.hidden = true;
+}
+
+if (settingsBtn) {
+  settingsBtn.addEventListener('click', openSettings);
+  settingsBtn.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openSettings();
+    }
+  });
+}
+
+if (closeSettings) closeSettings.addEventListener('click', closeSettingsPanel);
+
+if (settingsPanel) {
+  settingsPanel.addEventListener('click', (event) => {
+    if (event.target === settingsPanel) closeSettingsPanel();
+  });
+}
+
+if (settingsForm) {
+  settingsForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const updated = {
+      hideNotifications: Boolean(hideNotificationsToggle?.checked),
+      autoRefresh: Boolean(autoRefreshToggle?.checked),
+      defaultView: defaultViewSelect?.value || '#/users'
+    };
+    saveSettings(updated);
+    applyNotificationPref(updated.hideNotifications);
+    closeSettingsPanel();
+    if (updated.defaultView) {
+      location.hash = updated.defaultView;
+    }
+    if (updated.autoRefresh !== settings.autoRefresh) {
+      toggleAutoRefresh(updated.autoRefresh);
+    }
+    Object.assign(settings, updated);
+  });
+}
+
+if (resetSettingsBtn) {
+  resetSettingsBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    hideNotificationsToggle.checked = defaultSettings.hideNotifications;
+    autoRefreshToggle.checked = defaultSettings.autoRefresh;
+    defaultViewSelect.value = defaultSettings.defaultView;
+  });
+}
+
+let refreshTimer = null;
+
+function toggleAutoRefresh(enable) {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  if (enable) {
+    refreshTimer = setInterval(() => {
+      loadPlates();
+    }, 60000);
+  }
+}
+
+toggleAutoRefresh(settings.autoRefresh);
+
+function updateLastSync() {
+  if (helpLastSyncEl) {
+    helpLastSyncEl.textContent = new Date().toLocaleString();
+  }
+  if (flaggedUpdatedEl) {
+    flaggedUpdatedEl.textContent = new Date().toLocaleString();
+  }
 }

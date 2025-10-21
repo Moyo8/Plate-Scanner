@@ -101,14 +101,16 @@
       
       <div class="bottom-section">
         <p>General</p>
-        <div class="sidenav-link">
+        <div class="sidenav-link" id="settingsBtn" role="button" tabindex="0">
           <img src="images/icons/setting-icon.png">
           <div>Setting</div>
         </div>
-        <div class="sidenav-link">
-          <img src="images/icons/help-icon.png">
-          <div>Help</div>
-        </div>
+        <a href="#/help">
+          <div class="sidenav-link">
+            <img src="images/icons/help-icon.png">
+            <div>Help</div>
+          </div>
+        </a>
         <button type="button" class="sidenav-link" id="logoutBtn">
           <img src="images/icons/logout-icon.png">
           <div>Logout</div>
@@ -292,8 +294,119 @@
         </div>
       </section>
 
-      <section class="list" id="view-flagged" hidden>Flagged reports here</section>
+      <section class="list" id="view-flagged" hidden>
+        <div class="flagged-header">
+          <div>
+            <h2>Flagged Reports</h2>
+            <p class="muted-text">Plates that require additional attention.</p>
+          </div>
+          <div class="flagged-actions">
+            <input class="mini-search-bar" id="flaggedSearch" type="text" placeholder="Search flagged plates / owner" aria-label="Search flagged plates">
+            <button type="button" class="btn" id="exportFlagged">Export CSV</button>
+          </div>
+        </div>
+        <div class="flagged-summary">
+          <div>
+            <span class="summary-label">Total flagged</span>
+            <span id="flaggedTotal" class="summary-value">0</span>
+          </div>
+          <div>
+            <span class="summary-label">Last update</span>
+            <span id="flaggedUpdated" class="summary-value">--</span>
+          </div>
+        </div>
+        <div class="flagged-table" role="region" aria-live="polite">
+          <div class="flagged-row flagged-row--head">
+            <div>Plate Number</div>
+            <div>Owner</div>
+            <div>Vehicle</div>
+            <div>Notes</div>
+            <div>Last Modified</div>
+          </div>
+          <div id="flaggedRows" class="flagged-body">
+            <div class="flagged-empty">Loading…</div>
+          </div>
+        </div>
+        <div class="flagged-foot">
+          <button type="button" class="link-btn" id="flaggedGoToAdmin">Review in Admin panel</button>
+        </div>
+      </section>
+
+      <section class="list" id="view-help" hidden>
+        <div class="help-wrapper">
+          <header class="help-header">
+            <div>
+              <h2>Help & Resources</h2>
+              <p class="muted-text">Quick answers, support contacts, and troubleshooting tips.</p>
+            </div>
+            <a class="btn" href="mailto:support@platescanner.app?subject=PlateScanner%20Support">Email Support</a>
+          </header>
+
+          <div class="help-grid">
+            <section class="help-card">
+              <h3>Quick Actions</h3>
+              <ul>
+                <li><button type="button" class="link-btn" data-help-action="refresh">Refresh dashboard data</button></li>
+                <li><button type="button" class="link-btn" data-help-action="viewLogs">Open security logs</button></li>
+                <li><button type="button" class="link-btn" data-help-action="seed">View sample plate data</button></li>
+              </ul>
+            </section>
+
+            <section class="help-card">
+              <h3>FAQs</h3>
+              <div id="helpFaq" class="faq-list" aria-live="polite"></div>
+            </section>
+
+            <section class="help-card">
+              <h3>Environment</h3>
+              <dl class="env-list">
+                <div><dt>API Base</dt><dd id="helpApiBase">--</dd></div>
+                <div><dt>Last sync</dt><dd id="helpLastSync">--</dd></div>
+                <div><dt>Signed in as</dt><dd id="helpCurrentUser">--</dd></div>
+              </dl>
+            </section>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <section id="settingsPanel" class="settings-panel" hidden>
+      <div class="settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <header class="settings-header">
+          <h2 id="settingsTitle">Dashboard settings</h2>
+          <button type="button" id="closeSettings" aria-label="Close settings">&times;</button>
+        </header>
+        <form id="settingsForm" class="settings-form">
+          <fieldset>
+            <legend>Preferences</legend>
+            <label class="settings-row">
+              <span>Hide notification badge</span>
+              <input type="checkbox" name="hideNotifications" id="hideNotifications">
+            </label>
+            <label class="settings-row">
+              <span>Enable auto-refresh stats (every minute)</span>
+              <input type="checkbox" name="autoRefresh" id="autoRefresh">
+            </label>
+          </fieldset>
+          <fieldset>
+            <legend>Default view</legend>
+            <label class="settings-row">
+              <span class="sr-only">Default section</span>
+              <select name="defaultView" id="defaultView">
+                <option value="#/users">Overview</option>
+                <option value="#/plates">Plate Records</option>
+                <option value="#/logs">Security Logs</option>
+                <option value="#/admin">Admin Panel</option>
+              </select>
+            </label>
+          </fieldset>
+          <div class="settings-actions">
+            <button type="button" id="resetSettings" class="ghost">Reset</button>
+            <button type="submit" class="primary">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
     <script type="module" src="script/records.js"></script>
     <script>
